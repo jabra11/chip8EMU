@@ -1,0 +1,1 @@
+The goal of this project is to implement a Chip-8 interpreter. This is a starter project for me to get into low-level programming and emulations.
