@@ -1,1 +1,5 @@
-// todo: implement display characteristics
+
+class Display
+{
+
+};
