@@ -7,6 +7,8 @@ class CPU
 {
 public:
 
+    explicit CPU(Memory& ram);
+
     void execute_next_cycle();
 
     // in public for testing
@@ -28,7 +30,10 @@ private:
     void OR(const uint8_t Vx, const uint8_t Vy);
     void AND(const uint8_t Vx, const uint8_t Vy);
     void XOR(const uint8_t Vx, const uint8_t Vy);
-    // TODO: finish this up (14/36)
+    void add_c(const uint8_t Vx, const uint8_t Vy);
+    void sub(const uint8_t Vx, const uint8_t Vy);
+    void shr(const uint8_t Vx);
+    // TODO: finish this up (17/36)
 
     // store the currently executing address
     uint16_t program_counter;
@@ -40,8 +45,8 @@ private:
 
     // stores addresses that the interpreter should return
     // to after finishing a subroutine
-    std::array<uint16_t, 16> stack;
+    std::array<uint16_t, 16> stack{};
 
-    Registers reg;     
-    Memory ram;
+    Registers reg;
+    Memory& ram;
 };
