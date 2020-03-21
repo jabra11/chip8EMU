@@ -10,7 +10,7 @@ private:
     // general purpose 8bit registers
     // V[0x000F] should not be used by any program. It
     // is used by some instructions to set flags.
-    std::array<uint8_t, 16> V;
+    std::array<uint8_t, 16> V{};
 
     // I register is used to store memory addresses
     uint16_t I;
