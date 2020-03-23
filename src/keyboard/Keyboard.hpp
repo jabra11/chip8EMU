@@ -1,3 +1,6 @@
+#ifndef KEYBOARD_HPP
+#define KEYBOARD_HPP
+
 #include <map>
 
 class Keyboard
@@ -10,3 +13,5 @@ public:
 private:  
     std::map<int, int> remap;
 };
+
+#endif // KEYBOARD_HPP

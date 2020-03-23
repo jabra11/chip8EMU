@@ -1,3 +1,6 @@
+#ifndef REGISTERS_HPP
+#define REGISTERS_HPP
+
 #include <array>
 
 class Registers
@@ -22,3 +25,5 @@ private:
     // delay-timer
     uint8_t DT;
 };
+
+#endif // REGISTERS_HPP

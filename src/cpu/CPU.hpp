@@ -1,13 +1,17 @@
+#ifndef CPU_HPP
+#define CPU_HPP
+
 #include <array>
 
 #include "Registers.hpp"
-#include "../memory/Memory.hpp"
+
+class Memory;
 
 class CPU
 {
 public:
 
-    explicit CPU(Memory& ram);
+    explicit CPU(Memory* ram);
 
     void execute_next_cycle();
 
@@ -48,5 +52,7 @@ private:
     std::array<uint16_t, 16> stack{};
 
     Registers reg;
-    Memory& ram;
+    Memory* ram = nullptr;
 };
+
+#endif // CPU_HPP

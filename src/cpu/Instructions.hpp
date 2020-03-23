@@ -7,6 +7,9 @@
 // y - A 4-bit value, the upper 4 bits of the low byte of the instruction
 // kk or byte - An 8-bit value, the lowest 8 bits of the instruction
 
+#ifndef INSTRUCTIONS_HPP
+#define INSTRUCTIONS_HPP
+
 #include <cstdint>
 
 class OP
@@ -116,3 +119,5 @@ public:
         return opcode >> 12 == 0x08 && (opcode & 0x0F) == 0x6;
     }
 };
+
+#endif // INSTRUCTIONS_HPP

@@ -1,3 +1,6 @@
+#ifndef MEMORY_HPP
+#define MEMORY_HPP
+
 #include <array>
 
 class Memory
@@ -11,3 +14,5 @@ private:
     // 0x0200 - 0x0FFF: Program space 
     std::array<uint8_t, 4096> ram{};
 };
+
+#endif // MEMORY_HPP

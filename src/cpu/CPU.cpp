@@ -2,8 +2,9 @@
 
 #include "CPU.hpp"
 #include "Instructions.hpp"
+#include "../memory/Memory.hpp"
 
-CPU::CPU(Memory& ram)
+CPU::CPU(Memory* ram)
     :ram{ram}
 {
 }
@@ -23,7 +24,7 @@ void CPU::parse_instruction(uint16_t test_opcode)
     // values but the opcodes are 12 bits, therefore
     // it is probably necessary to load two addresses
     // and "combine" them to obtain a valid opcode
-    uint16_t opcode = ram.read(program_counter);
+    uint16_t opcode = ram->read(program_counter);
 
     // testing
     opcode = test_opcode;
