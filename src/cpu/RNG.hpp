@@ -1,3 +1,6 @@
+#ifndef RNG_HPP
+#define RNG_HPP
+
 #include <random>
 
 class RNG
@@ -13,3 +16,6 @@ public:
 private:
     std::mt19937 gen{std::random_device{}()};
 };
+
+
+#endif // RNG_HPP
