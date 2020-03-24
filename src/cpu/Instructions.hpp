@@ -11,6 +11,7 @@
 #define INSTRUCTIONS_HPP
 
 #include <cstdint>
+#include <iostream>
 
 class OP
 {
@@ -18,6 +19,7 @@ public:
     OP() = delete;
 
     // 0nnn - SYS addr
+    
     static constexpr bool is_jump_sys(const uint16_t opcode)
     {
         return opcode >> 12 == 0x0;
@@ -48,25 +50,25 @@ public:
     }
 
     // 3xkk - SE Vx, byte
-    static constexpr bool is_skip_if(const uint16_t opcode)
+    static constexpr bool is_skip_if_rb(const uint16_t opcode)
     {
         return opcode >> 12 == 0x03;
     }
 
     // 4xkk - SNE Vx, byte
-    static constexpr bool is_skip_if_not(const uint16_t opcode)
+    static constexpr bool is_skip_if_not_rb(const uint16_t opcode)
     {
         return opcode >> 12 == 0x04;
     }
 
     // 5xy0 - SE Vx, Vy
-    static constexpr bool is_skip_if_not_r(const uint16_t opcode)
+    static constexpr bool is_skip_if_rr(const uint16_t opcode)
     {
         return opcode >> 12 == 0x05 && (opcode & 0x00F) == 0x0; 
     }
     
     // 6xkk - LD Vx, byte
-    static constexpr bool is_load(const uint16_t opcode)
+    static constexpr bool is_load_rb(const uint16_t opcode)
     {
         return opcode >> 12 == 0x06;
     }
@@ -78,7 +80,7 @@ public:
     }
 
     // 8xy0 - LD Vx, Vy
-    static constexpr bool is_load_r(const uint16_t opcode)
+    static constexpr bool is_load_rr(const uint16_t opcode)
     {
         return opcode >> 12 == 0x08 && (opcode & 0x00F) == 0x0;
     }
@@ -118,6 +120,42 @@ public:
     {
         return opcode >> 12 == 0x08 && (opcode & 0x0F) == 0x6;
     }
+
+    // 8xy7 - SUBN Vx, Vy
+    static constexpr bool is_sub_n(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x08 && (opcode & 0x0F) == 0x7;
+    }
+
+    // 8xyE - SHL Vx
+    static constexpr bool is_shl(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x08 && (opcode & 0x0F) == 0xE;
+    }
+
+    // 9xy0 - SNE Vx, Vy
+    static constexpr bool is_skip_if_not_rr(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x09 && (opcode & 0x0F) == 0x0;
+    }
+
+    // Annn - LD I, addr
+    static constexpr bool is_load_ai(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0A;
+    }
+
+    // Bnnn - JP V0 - addr
+    static constexpr bool is_jump_ra(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0B;
+    }
+
+    static constexpr bool is_rnd(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0C;
+    }
+    
 };
 
 #endif // INSTRUCTIONS_HPP
