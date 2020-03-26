@@ -12,12 +12,27 @@ CPU::CPU(Memory* ram)
 void CPU::execute_next_cycle()
 {
     parse_instruction(0xFFFF);
+    update_timers();
+}
+
+void CPU::update_timers()
+{
+    if (reg.DT)
+    {
+        if (timer.is_ready(Timer::Type::delay, 60))
+            --reg.DT;
+    }
+    if (reg.ST)
+    {
+        if (timer.is_ready(Timer::Type::sound, 60))
+            --reg.ST;
+    }
 }
 
 uint16_t CPU::fetch_opcode()
 {
-    // the addresses are 8bits long and store 8bit
-    // values but the opcodes are 16 bits, therefore
+    // the addresses are 12bits long and store 8bit
+    // values but the opcodes are 16 bits long, therefore
     // it is necessary to load two addresses
     // and "combine" them to obtain a valid opcode
     //
@@ -27,14 +42,15 @@ uint16_t CPU::fetch_opcode()
     // 
     // if a program includes sprite data, it should be padded
     // to ensure the opcodes to be aligned properly
+    if (program_counter % 2 != 0)
+        throw std::exception{"program counter missaligned"};
 
-    uint16_t opcode = ram->read(program_counter);
-    ++program_counter;
+    uint16_t opcode = ram->read(program_counter++);
     opcode = opcode << 8;
-    opcode += ram->read(program_counter);
-    ++program_counter;
+    opcode += ram->read(program_counter++);
 
-    std::cout << std::hex << opcode << std::endl;
+    // testing
+    //std::cout << std::hex << opcode << std::endl;
     return opcode;
 }
 
@@ -45,7 +61,7 @@ void CPU::parse_instruction(uint16_t test_opcode)
     uint16_t opcode = fetch_opcode();
     
     // testing
-    opcode = test_opcode;
+    //opcode = test_opcode;
 
     if (OP::is_clear_display(opcode))               
         clear_display(); 
@@ -112,10 +128,47 @@ void CPU::parse_instruction(uint16_t test_opcode)
     else if(OP::is_rnd(opcode))
         rnd((opcode >> 8) & 0x0F, opcode & 0x00FF);
 
-    // this should be the last
-    else if (OP::is_jump_sys(opcode))               
-        jump_sys(opcode & 0x0FFF);
+    else if(OP::is_draw(opcode))
+        draw((opcode >> 8) & 0x0F, (opcode >> 4) & 0x0F, opcode & 0x0F);
     
+    else if(OP::is_skip_if_pressed(opcode))
+        skip_if_pressed((opcode >> 8) & 0x0F);
+
+    else if(OP::is_skip_if_not_pressed(opcode))
+        skip_if_not_pressed((opcode >> 8) & 0x0F);
+
+    else if(OP::is_load_delay(opcode)) 
+        load_delay((opcode >> 8) & 0x0F);
+    
+    else if(OP::is_load_key(opcode))
+        load_key((opcode >> 8) & 0x0F);
+
+    else if(OP::is_set_delay(opcode))
+        set_delay((opcode >> 8) & 0x0F);
+    
+    else if(OP::is_set_sound(opcode))
+        set_sound((opcode >> 8) & 0x0F);
+
+    else if(OP::is_add_ir(opcode))
+        add_ir((opcode >> 8) & 0x0F);
+
+    else if(OP::is_load_loc(opcode))
+        load_loc((opcode >> 8) & 0x0F);
+
+    else if(OP::is_load_BCD(opcode))
+        load_BCD((opcode >> 8) & 0x0F);
+
+    else if(OP::is_dump_reg(opcode))
+        dump_reg((opcode >> 8) & 0x0F);
+        
+    else if(OP::is_load_reg(opcode))
+        dump_reg((opcode >> 8) & 0x0F);
+
+    // this should be the second last
+    else if(OP::is_jump_sys(opcode))               
+        jump_sys(opcode & 0x0FFF);
+    else
+        throw std::runtime_error{"Unsupported instruction."};
     
 }
 
@@ -332,8 +385,115 @@ void CPU::jump_ra(const uint16_t address)
 
 void CPU::rnd(const uint8_t Vx, const uint8_t byte)
 {
-    if constexpr(debug)
+    if constexpr(debug) 
         std::cout << __FUNCTION__ << std::endl;
     
     reg.put(Vx, rng.get(0,255) & byte);
+}
+
+void CPU::draw(const uint8_t Vx, const uint8_t Vy, const uint8_t amount_sprites)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+    
+    // work in progress
+}
+
+void CPU::skip_if_pressed(const uint8_t Vx)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+
+    // work in progress 
+}
+
+void CPU::skip_if_not_pressed(const uint8_t Vx)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+
+    // work in progress 
+}
+
+void CPU::load_delay(const uint8_t Vx)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+
+    reg.put(Vx, reg.DT);
+}
+
+void CPU::load_key(const uint8_t Vx)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+
+    // work in progress 
+}
+
+void CPU::set_delay(const uint8_t Vx)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+
+    reg.DT = reg.get(Vx);
+}
+
+void CPU::set_sound(const uint8_t Vx)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+
+    reg.ST = reg.get(Vx);
+}
+
+void CPU::add_ir(const uint8_t Vx)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+
+    reg.I += reg.get(Vx);
+}
+
+void CPU::load_loc(const uint8_t Vx)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+
+    // work in progress 
+}
+
+void CPU::load_BCD(const uint8_t Vx)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+    
+    auto tmp = reg.get(Vx);
+    ram->write(reg.I, tmp / 100);
+    ram->write(reg.I + 0x01, (tmp / 10) % 10);
+    ram->write(reg.I + 0x02, tmp % 10);
+}
+
+void CPU::dump_reg(const uint8_t Vx)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+    
+    // not sure if it is supposed to copy from
+    // V0 to Vx or from V0 to reg.read(Vx)
+    // this might become an error
+    for (int i = 0; i <= Vx; ++i)
+        ram->write(reg.I + i, reg.get(i));
+}
+
+void CPU::load_reg(const uint8_t Vx)
+{
+    if constexpr(debug) 
+        std::cout << __FUNCTION__ << std::endl;
+    
+    // not sure if it is supposed to copy from
+    // V0 to Vx or from V0 to reg.read(Vx)
+    // this might become an error
+    for (int i = 0; i <= Vx; ++i)
+        reg.put(i, ram->read(reg.I + i));
 }

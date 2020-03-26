@@ -151,11 +151,96 @@ public:
         return opcode >> 12 == 0x0B;
     }
 
+    // Cxkk - RND Vx, byte
     static constexpr bool is_rnd(const uint16_t opcode)
     {
         return opcode >> 12 == 0x0C;
     }
+
+    // Dxyn - DRW Vx, Vy, nibble
+    static constexpr bool is_draw(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0D;
+    }
     
+    // Ex9E - SKP Vx
+    static constexpr bool is_skip_if_pressed(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0E 
+            && ((opcode >> 4) & 0x0F) == 0x09
+            && (opcode & 0x0F) == 0x0E;
+    }
+
+    // ExA1 - SKNP Vx 
+    static constexpr bool is_skip_if_not_pressed(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0E
+            && ((opcode >> 4) & 0x0F) == 0x0A
+            && (opcode & 0x0F) == 0x01;
+    }
+
+    // Fx07 - LD Vx, DT
+    static constexpr bool is_load_delay(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0F 
+            && (opcode & 0x0F) == 0x07;
+    }
+
+    // Fx0A - LD Vx, K
+    static constexpr bool is_load_key(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0F
+            && (opcode & 0x0F) == 0x0A;
+    }
+
+    // Fx15 - LD DT, Vx
+    static constexpr bool is_set_delay(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0F
+            && (opcode & 0xFF) == 0x15;
+    }
+
+    // Fx18 - LD ST, Vx
+    static constexpr bool is_set_sound(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0F
+            && (opcode & 0xFF) == 0x18;
+    }
+
+    // Fx1E - ADD I, Vx
+    static constexpr bool is_add_ir(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0F
+            && (opcode & 0xFF) == 0x1E;
+    }
+
+    // Fx29 - LD I(F?), Vx
+    static constexpr bool is_load_loc(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0F
+            && (opcode & 0xFF) == 0x29;
+    }
+
+    // Fx33 - LD B, Vx
+    static constexpr bool is_load_BCD(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0F
+            && (opcode & 0xFF) == 0x33;
+    }
+
+    // Fx55 - LD [I], Vx
+    static constexpr bool is_dump_reg(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0F
+            && (opcode & 0xFF) == 0x55;
+    }
+
+    // Fx65 - LD Vx, [I]
+    static constexpr bool is_load_reg(const uint16_t opcode)
+    {
+        return opcode >> 12 == 0x0F
+            && (opcode & 0xFF) == 0x65;
+    }
 };
 
 #endif // INSTRUCTIONS_HPP
