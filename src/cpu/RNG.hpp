@@ -7,7 +7,7 @@ class RNG
 {
 public:
     // inclusive range
-    int get(const int min, const int max)
+    int get(int min, int max)
     {
         std::uniform_int_distribution<> dis(min, max);
         return dis(gen);

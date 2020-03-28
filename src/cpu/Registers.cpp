@@ -3,9 +3,9 @@
 #include <iostream>
 
 
-uint8_t Registers::get(const uint8_t index) const
+uint8_t Registers::get(uint8_t index) const
 {
-    if (index >= 0 && index < V.size())
+    if (index < V.size())
         return V[index];
     else
     {
@@ -15,9 +15,9 @@ uint8_t Registers::get(const uint8_t index) const
     }
 }
 
-void Registers::put(const uint8_t index, const uint8_t val)
+void Registers::put(uint8_t index, uint8_t val)
 {
-    if (index >= 0 && index < V.size())
+    if (index < V.size())
         V[index] = val;
     else
     {
