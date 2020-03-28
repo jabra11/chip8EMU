@@ -54,6 +54,31 @@ uint16_t CPU::fetch_opcode()
     return opcode;
 }
 
+uint8_t CPU::get_pc() const
+{
+    return program_counter;
+}
+
+uint8_t CPU::get_reg_at(uint8_t index) const
+{
+    return reg.get(index);
+}
+
+std::string CPU::get_current_opcode() const
+{
+    return current_opcode;
+}
+
+uint8_t CPU::get_stack_pointer() const
+{
+    return stack_pointer;
+}
+
+const std::array<uint16_t, 16>& CPU::get_stack() const
+{
+    return stack;
+}
+
 void CPU::parse_instruction(uint16_t test_opcode)
 { 
     // opcodes are based on 
@@ -175,7 +200,7 @@ void CPU::parse_instruction(uint16_t test_opcode)
 void CPU::jump_sys(uint16_t address)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     program_counter = address;
 }
@@ -183,7 +208,7 @@ void CPU::jump_sys(uint16_t address)
 void CPU::clear_display()
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     // work in progress
 }
@@ -191,7 +216,7 @@ void CPU::clear_display()
 void CPU::return_from_routine()
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     program_counter = stack[stack_pointer--];
 }
@@ -199,7 +224,7 @@ void CPU::return_from_routine()
 void CPU::jump(uint16_t address)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     program_counter = address;
 }
@@ -207,7 +232,7 @@ void CPU::jump(uint16_t address)
 void CPU::call_subroutine(uint16_t address)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     stack[++stack_pointer] = program_counter;
     program_counter = address;
@@ -216,7 +241,7 @@ void CPU::call_subroutine(uint16_t address)
 void CPU::skip_if_rb(uint8_t Vx, uint8_t byte)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     if (reg.get(Vx) == byte)
         program_counter += 2;
@@ -225,7 +250,7 @@ void CPU::skip_if_rb(uint8_t Vx, uint8_t byte)
 void CPU::skip_if_not_rb(uint8_t Vx, uint8_t byte)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     if (reg.get(Vx) != byte)
         program_counter += 2;
@@ -234,7 +259,7 @@ void CPU::skip_if_not_rb(uint8_t Vx, uint8_t byte)
 void CPU::skip_if_rr(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     if (reg.get(Vx) == reg.get(Vy))
         program_counter += 2;
@@ -243,7 +268,7 @@ void CPU::skip_if_rr(uint8_t Vx, uint8_t Vy)
 void CPU::load_rb(uint8_t Vx, uint8_t byte)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     reg.put(Vx, byte);
 }
@@ -251,7 +276,7 @@ void CPU::load_rb(uint8_t Vx, uint8_t byte)
 void CPU::load_rr(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     reg.put(Vx, reg.get(Vy));
 }
@@ -259,7 +284,7 @@ void CPU::load_rr(uint8_t Vx, uint8_t Vy)
 void CPU::add(uint8_t Vx, uint8_t byte)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     reg.put(Vx, reg.get(Vx) + byte);
 }
@@ -267,7 +292,7 @@ void CPU::add(uint8_t Vx, uint8_t byte)
 void CPU::OR(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     reg.put(Vx, (reg.get(Vx) | reg.get(Vy)));
 }
@@ -275,7 +300,7 @@ void CPU::OR(uint8_t Vx, uint8_t Vy)
 void CPU::AND(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     reg.put(Vx, (reg.get(Vx) & reg.get(Vy)));
 }
@@ -283,7 +308,7 @@ void CPU::AND(uint8_t Vx, uint8_t Vy)
 void CPU::XOR(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     reg.put(Vx, (reg.get(Vx) ^ reg.get(Vy)));
 }
@@ -291,7 +316,7 @@ void CPU::XOR(uint8_t Vx, uint8_t Vy)
 void CPU::add_c(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     // set V[0x0F] = 1 if result is > 8bits 
     if (reg.get(Vx) + reg.get(Vy) > 0xFF)
@@ -302,7 +327,7 @@ void CPU::add_c(uint8_t Vx, uint8_t Vy)
 void CPU::sub(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     // set V[0x0F] = 1 if Vx > Vy, otherwise 0
     if (reg.get(Vx) > reg.get(Vy))
@@ -316,7 +341,7 @@ void CPU::sub(uint8_t Vx, uint8_t Vy)
 void CPU::shr(uint8_t Vx)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     // if the least-signif. bit of Vx is 1, set 
     // VF to 1, otherwise to 0
@@ -331,7 +356,7 @@ void CPU::shr(uint8_t Vx)
 void CPU::sub_n(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     // set V[0x0F] = 1 if Vy > Vx, otherwise 0
     if (reg.get(Vx) > reg.get(Vy))
@@ -345,7 +370,7 @@ void CPU::sub_n(uint8_t Vx, uint8_t Vy)
 void CPU::shl(uint8_t Vx)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     if (reg.get(Vx) >> 3 == 0x01)
         reg.put(0x0F, 1);
@@ -358,7 +383,7 @@ void CPU::shl(uint8_t Vx)
 void CPU::skip_if_not_rr(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     if (reg.get(Vx) != reg.get(Vy))
         program_counter += 2;
@@ -367,7 +392,7 @@ void CPU::skip_if_not_rr(uint8_t Vx, uint8_t Vy)
 void CPU::load_ai(uint16_t address)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
         
     reg.I = address;
 }
@@ -375,7 +400,7 @@ void CPU::load_ai(uint16_t address)
 void CPU::jump_ra(uint16_t address)
 {
     if constexpr(debug)
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     program_counter = address + reg.get(0x0);
 }
@@ -383,7 +408,7 @@ void CPU::jump_ra(uint16_t address)
 void CPU::rnd(uint8_t Vx, uint8_t byte)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
     
     reg.put(Vx, rng.get(0,255) & byte);
 }
@@ -391,7 +416,7 @@ void CPU::rnd(uint8_t Vx, uint8_t byte)
 void CPU::draw(uint8_t Vx, uint8_t Vy, uint8_t amount_sprites)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
     
     // work in progress
 }
@@ -399,7 +424,7 @@ void CPU::draw(uint8_t Vx, uint8_t Vy, uint8_t amount_sprites)
 void CPU::skip_if_pressed(uint8_t Vx)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     // work in progress 
 }
@@ -407,7 +432,7 @@ void CPU::skip_if_pressed(uint8_t Vx)
 void CPU::skip_if_not_pressed(uint8_t Vx)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     // work in progress 
 }
@@ -415,7 +440,7 @@ void CPU::skip_if_not_pressed(uint8_t Vx)
 void CPU::load_delay(uint8_t Vx)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     reg.put(Vx, reg.DT);
 }
@@ -423,7 +448,7 @@ void CPU::load_delay(uint8_t Vx)
 void CPU::load_key(uint8_t Vx)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     program_counter -= 2;
     // work in progress 
@@ -432,7 +457,7 @@ void CPU::load_key(uint8_t Vx)
 void CPU::set_delay(uint8_t Vx)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     reg.DT = reg.get(Vx);
 }
@@ -440,7 +465,7 @@ void CPU::set_delay(uint8_t Vx)
 void CPU::set_sound(uint8_t Vx)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     reg.ST = reg.get(Vx);
 }
@@ -448,7 +473,7 @@ void CPU::set_sound(uint8_t Vx)
 void CPU::add_ir(uint8_t Vx)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     reg.I += reg.get(Vx);
 }
@@ -456,7 +481,7 @@ void CPU::add_ir(uint8_t Vx)
 void CPU::load_sprite_loc(uint8_t Vx)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
 
     // work in progress 
 }
@@ -464,7 +489,7 @@ void CPU::load_sprite_loc(uint8_t Vx)
 void CPU::load_BCD(uint8_t Vx)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
     
     auto tmp = reg.get(Vx);
     ram->write(reg.I, tmp / 100);
@@ -475,7 +500,7 @@ void CPU::load_BCD(uint8_t Vx)
 void CPU::dump_reg(uint8_t Vx)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
     
     // not sure if it is supposed to copy from
     // V0 to Vx or from V0 to reg.read(Vx)
@@ -487,7 +512,7 @@ void CPU::dump_reg(uint8_t Vx)
 void CPU::load_reg(uint8_t Vx)
 {
     if constexpr(debug) 
-        std::cout << __FUNCTION__ << std::endl;
+        current_opcode = __FUNCTION__;
     
     // not sure if it is supposed to copy from
     // V0 to Vx or from V0 to reg.read(Vx)

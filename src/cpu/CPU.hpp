@@ -18,6 +18,11 @@ public:
     CPU(Memory* ram, Keyboard* kb, Display* dp);
 
     void execute_next_cycle();
+    uint8_t get_pc() const;
+    uint8_t get_reg_at(uint8_t index) const;
+    std::string get_current_opcode() const;
+    uint8_t get_stack_pointer() const;
+    const std::array<uint16_t, 16>& get_stack() const;
 
     // in public for testing
     void parse_instruction(uint16_t test_opcode);
@@ -69,6 +74,8 @@ private:
 
     // store the currently executing address
     uint16_t program_counter = 0x200;
+
+    std::string current_opcode;
 
     // point to the topmost level of the stack
     // startvalue of 255 to avoid call_subroutine
