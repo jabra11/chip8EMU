@@ -19,8 +19,8 @@ public:
             if (std::chrono::duration_cast<std::chrono::microseconds>(timer.now() - 
                 sound_interval).count() > (1'000'000 / required_rate))
             {
-                    return true;
                     sound_interval = timer.now();
+                    return true;
             }
             else
                 return false;
@@ -30,8 +30,8 @@ public:
             if (std::chrono::duration_cast<std::chrono::microseconds>(timer.now() - 
                 delay_interval).count() > (1'000'000 / required_rate))
             {
-                return true;
                 delay_interval = timer.now();
+                return true;
             }
             else
                 return false;
