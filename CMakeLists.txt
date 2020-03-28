@@ -19,6 +19,8 @@ set(src
     src/keyboard/Keyboard.cpp
     src/memory/Memory.hpp
     src/memory/Memory.cpp
+    src/Object_manager.hpp
+    src/Object_manager.cpp
     )
 
 find_package(SFML COMPONENTS graphics audio window system)
@@ -31,3 +33,5 @@ target_link_libraries(chip8EMU
             sfml-audio
             sfml-window
             sfml-system)       
+            
+            
