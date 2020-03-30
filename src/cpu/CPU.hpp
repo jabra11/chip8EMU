@@ -18,6 +18,9 @@ public:
     CPU(Memory* ram, Keyboard* kb, Display* dp);
 
     void execute_next_cycle();
+    uint16_t get_I() const;
+    uint8_t get_ST() const;
+    uint8_t get_DT() const;
     uint16_t get_pc() const;
     uint8_t get_reg_at(uint8_t index) const;
     std::string get_current_opcode() const;
@@ -30,9 +33,8 @@ public:
 private:
     static constexpr bool debug = true;
 
-    void update_timers();
-
     uint16_t fetch_opcode();
+    void update_timers();
 
     void jump_sys(uint16_t address);
     void clear_display();

@@ -17,6 +17,46 @@ void CPU::execute_next_cycle()
     update_timers();
 }
 
+uint16_t CPU::get_I() const
+{
+    return reg.I;
+}
+
+uint8_t CPU::get_ST() const
+{
+    return reg.ST;
+}
+
+uint8_t CPU::get_DT() const
+{
+    return reg.DT;
+}
+
+uint16_t CPU::get_pc() const
+{
+    return program_counter;
+}
+
+uint8_t CPU::get_reg_at(uint8_t index) const
+{
+    return reg.get(index);
+}
+
+std::string CPU::get_current_opcode() const
+{
+    return current_opcode;
+}
+
+uint8_t CPU::get_stack_pointer() const
+{
+    return stack_pointer;
+}
+
+const std::array<uint16_t, 16>& CPU::get_stack() const
+{
+    return stack;
+}
+
 void CPU::update_timers()
 {
     if (reg.DT)
@@ -56,30 +96,6 @@ uint16_t CPU::fetch_opcode()
     return opcode;
 }
 
-uint16_t CPU::get_pc() const
-{
-    return program_counter;
-}
-
-uint8_t CPU::get_reg_at(uint8_t index) const
-{
-    return reg.get(index);
-}
-
-std::string CPU::get_current_opcode() const
-{
-    return current_opcode;
-}
-
-uint8_t CPU::get_stack_pointer() const
-{
-    return stack_pointer;
-}
-
-const std::array<uint16_t, 16>& CPU::get_stack() const
-{
-    return stack;
-}
 
 void CPU::parse_instruction(uint16_t test_opcode)
 { 
