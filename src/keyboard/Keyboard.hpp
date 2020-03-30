@@ -1,17 +1,25 @@
 #ifndef KEYBOARD_HPP
 #define KEYBOARD_HPP
 
-#include <map>
+#include <array>
+#include <SFML/Graphics.hpp>
 
 class Keyboard
 {
 public:
-    Keyboard keyboard();
+    Keyboard();
+    explicit Keyboard(std::array<sf::Keyboard::Key, 16> key_map);
 
-    // implement some routine which converts
-    // the default mapping to a user-defined mapping
+    bool check(uint8_t k) const;
+    void notify(sf::Keyboard::Key k, bool pressed);
 private:  
-    std::map<int, int> remap;
+    struct Key_state
+    {
+        sf::Keyboard::Key type;
+        bool pressed = false;
+    };
+
+    std::array<Key_state, 16> keys;
 };
 
 #endif // KEYBOARD_HPP

@@ -4,6 +4,8 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 
+#include <Timings.hpp>
+
 #include "cpu/CPU.hpp"
 #include "memory/Memory.hpp"
 #include "display/Display.hpp"
@@ -34,7 +36,7 @@ private:
     Object_manager manager;
 
     // in hz
-    int clock_speed = 20;
+    int clock_speed = 100;
 
     // keep track of bottlenecking
     int clock_cycles_done = 0;
@@ -42,8 +44,8 @@ private:
     Timer timer;
     Memory ram;
     Display display;
-    Keyboard kb;
-    CPU cpu{&ram, &kb, &display};
+    Keyboard keyboard;
+    CPU cpu{&ram, &keyboard, &display};
 };
 
 #endif // EMULATOR_HPP

@@ -3,10 +3,10 @@
 #include <iostream>
 #include <chrono> // sleep_for helper
 #include <thread> // sleep_for
+#include <sstream>
 
 #include <cstddef>
 
-std::byte b;
 
 #include <SFML/Graphics.hpp>
 
@@ -91,8 +91,16 @@ void Emulator::handle_events()
     {
         switch (evt.type)
         {
-            case sf::Event::Closed: window.close(); return;
-            default: return;
+            case sf::Event::Closed: 
+                window.close(); 
+                break;
+            case sf::Event::KeyPressed: 
+                keyboard.notify(evt.key.code, true);
+                break;
+            case sf::Event::KeyReleased:
+                keyboard.notify(evt.key.code, false);
+                break;
+            default: break;
         }
     }
 }
@@ -102,32 +110,56 @@ void Emulator::render()
     window.clear();
 
     window.draw(manager.get_rectangle_ref("background"));
-    window.draw(manager.get_text_ref("PC"));
-    window.draw(manager.get_text_ref("Instruction"));
+    window.draw(manager.get_text_cref("PC"));
+    window.draw(manager.get_text_cref("Instruction"));
     
     for(int i = 0; i < 16; ++i)
-        window.draw(manager.get_text_ref("V" + std::to_string(i)));
+        window.draw(manager.get_text_cref("V" + std::to_string(i)));
 
     window.display();
 }
 
 void Emulator::update_graphics()
 {
-    manager.get_text_ref("PC").setString("PC: " 
-            + std::to_string(cpu.get_pc()));
-    
-    manager.get_text_ref("Instruction").setString("Current opcode: " + 
-            cpu.get_current_opcode());
+    std::stringstream ss;
+
+    ss << "PC: 0x" << std::hex << static_cast<int>(cpu.get_pc());
+    manager.modify_string("PC", ss.str());
+    ss.str("");
+
+    ss << "OP: " << cpu.get_current_opcode();
+    manager.modify_string("Instruction", ss.str());
+    ss.str("");
+
     for (int i = 0; i < 9; ++i)
     {
-        manager.get_text_ref("V" + std::to_string(i)).setString("V0"
-            + std::to_string(i) + ": " + std::to_string(cpu.get_reg_at(i)));
+        ss << "V" << i << ": 0x" << static_cast<int>(cpu.get_reg_at(i));
+        manager.modify_string("V" + std::to_string(i), ss.str());
+        ss.str("");
     }
+
     for (int i = 9; i < 16; ++i)
     {
-        manager.get_text_ref("V" + std::to_string(i)).setString("V"
-            + std::to_string(i) + ": " + std::to_string(cpu.get_reg_at(i)));
+        ss << "V" << i << ": 0x" << static_cast<int>(cpu.get_reg_at(i));
+        manager.modify_string("V" + std::to_string(i), ss.str());
+        ss.str("");
     }
+
+    //manager.get_text_ref("PC").setString("PC: " 
+    //        + std::to_string(cpu.get_pc()));
+    
+    //manager.get_text_ref("Instruction").setString("Current opcode: " + 
+    //        cpu.get_current_opcode());
+    //for (int i = 0; i < 9; ++i)
+    //{
+    //    manager.get_text_ref("V" + std::to_string(i)).setString("V0"
+    //        + std::to_string(i) + ": " + std::to_string(cpu.get_reg_at(i)));
+    //}
+    //for (int i = 9; i < 16; ++i)
+    //{
+    //    manager.get_text_ref("V" + std::to_string(i)).setString("V"
+    //        + std::to_string(i) + ": " + std::to_string(cpu.get_reg_at(i)));
+    //}
 }
 
 void Emulator::emulate_cpu()
