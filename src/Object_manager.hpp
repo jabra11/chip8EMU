@@ -42,6 +42,8 @@ public:
     Object_property get_properties_of_text(const std::string& name);
     Object_property get_properties_of_rectangle(const std::string& name);
 
+    void modify_string(const std::string& name, const std::string& new_string);
+
     void modify_text(const std::string& name, const Object_property& new_properties);
     void modify_rectangle(const std::string& name, const Object_property& new_properties);
 

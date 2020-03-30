@@ -66,3 +66,8 @@ const sf::RectangleShape& Object_manager::get_rectangle_cref(const std::string &
         throw std::runtime_error{"Did not find rectangle."};
     return rectangles[name];
 }
+
+void Object_manager::modify_string(const std::string& name, const std::string& new_string)
+{
+    texts[name].setString(new_string);
+}
