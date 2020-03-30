@@ -19,7 +19,6 @@ public:
     OP() = delete;
 
     // 0nnn - SYS addr
-    
     static constexpr bool is_jump_sys(uint16_t opcode)
     {
         return opcode >> 12 == 0x0;

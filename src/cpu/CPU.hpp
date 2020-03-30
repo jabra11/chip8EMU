@@ -18,7 +18,7 @@ public:
     CPU(Memory* ram, Keyboard* kb, Display* dp);
 
     void execute_next_cycle();
-    uint8_t get_pc() const;
+    uint16_t get_pc() const;
     uint8_t get_reg_at(uint8_t index) const;
     std::string get_current_opcode() const;
     uint8_t get_stack_pointer() const;
@@ -70,7 +70,7 @@ private:
     void dump_reg(uint8_t Vx);
     void load_reg(uint8_t Vx);
     
-    // TODO: finish this up (29/35)
+    // TODO: finish this up (32/35)
 
     // store the currently executing address
     uint16_t program_counter = 0x200;

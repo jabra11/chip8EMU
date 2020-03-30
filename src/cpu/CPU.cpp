@@ -3,6 +3,8 @@
 #include "CPU.hpp"
 #include "Instructions.hpp"
 #include "../memory/Memory.hpp"
+#include "../keyboard/Keyboard.hpp"
+#include "../display/Display.hpp"
 
 CPU::CPU(Memory* ram, Keyboard* kb, Display* dp)
     :ram{ram}, keyboard{kb}, display{dp}
@@ -54,7 +56,7 @@ uint16_t CPU::fetch_opcode()
     return opcode;
 }
 
-uint8_t CPU::get_pc() const
+uint16_t CPU::get_pc() const
 {
     return program_counter;
 }
@@ -86,7 +88,7 @@ void CPU::parse_instruction(uint16_t test_opcode)
     uint16_t opcode = fetch_opcode();
     
     // testing
-    //opcode = test_opcode;
+    //opcode = 0xFF0A;
 
     if (OP::is_clear_display(opcode))               
         clear_display(); 
@@ -426,7 +428,8 @@ void CPU::skip_if_pressed(uint8_t Vx)
     if constexpr(debug) 
         current_opcode = __FUNCTION__;
 
-    // work in progress 
+    if (keyboard->check(reg.get(Vx)))
+        program_counter += 2;
 }
 
 void CPU::skip_if_not_pressed(uint8_t Vx)
@@ -434,7 +437,8 @@ void CPU::skip_if_not_pressed(uint8_t Vx)
     if constexpr(debug) 
         current_opcode = __FUNCTION__;
 
-    // work in progress 
+    if (!keyboard->check(reg.get(Vx)))
+        program_counter += 2;
 }
 
 void CPU::load_delay(uint8_t Vx)
@@ -450,8 +454,19 @@ void CPU::load_key(uint8_t Vx)
     if constexpr(debug) 
         current_opcode = __FUNCTION__;
 
+    for (int i = 0; i < 16; ++i)
+    {
+        if (keyboard->check(i))
+        {
+            reg.put(Vx, i);
+            return; 
+        }
+    }
+
+    // reset the PC to this instruction
+    // to basically hold all execution
+    // as described in the TS
     program_counter -= 2;
-    // work in progress 
 }
 
 void CPU::set_delay(uint8_t Vx)
