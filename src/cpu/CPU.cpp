@@ -228,7 +228,7 @@ void CPU::clear_display()
     if constexpr(debug)
         current_opcode = __FUNCTION__;
         
-    // work in progress
+    display->clear_display();
 }
 
 void CPU::return_from_routine()
@@ -236,7 +236,8 @@ void CPU::return_from_routine()
     if constexpr(debug)
         current_opcode = __FUNCTION__;
 
-    program_counter = stack[stack_pointer--];
+    program_counter = stack[stack_pointer];
+    stack[stack_pointer--] = 0;
 }
 
 void CPU::jump(uint16_t address)
