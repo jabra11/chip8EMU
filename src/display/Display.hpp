@@ -16,7 +16,7 @@ public:
         int y;
     };
 
-    Display(Dim d, Pos p);
+    Display();
 
     void clear_display();
     const std::vector<sf::RectangleShape>& get_graphics() const;
@@ -24,7 +24,7 @@ public:
     // return true if collisions happen
     bool add_graphic(Dim d, Pos p);
 private:
-    Dim dimension;
+    Dim dimension {64, 32};
     Pos position;
     std::vector<sf::RectangleShape> rects;
 };
