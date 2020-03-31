@@ -17,39 +17,7 @@
 Emulator::Emulator(int w, int h)
     :window{sf::VideoMode(w, h), "Chip8EMU"}
 {
-    using P = Object_manager::Object_property;
-
-    // add program counter
-    P tmp;
-    tmp.name = "PC";
-    tmp.pos = sf::Vector2f(w/2, h/2);
-    tmp.color = sf::Color::Green;
-    manager.add_text(tmp);
-
-    // add opcode
-    tmp = P{};
-    tmp.name = "Instruction";
-    tmp.color = sf::Color::Green;
-    tmp.pos = sf::Vector2f(w / 3, h/10 * 1);
-    manager.add_text(tmp);
-
-    // add registers
-    for (int i = 0; i < 16; ++i)
-    {
-        P tmp;
-        tmp.name = "V" + std::to_string(i);
-        tmp.color = sf::Color::Green;
-        tmp.pos = sf::Vector2f(w / 10 * 7, h / 20 * i + 50);
-
-        manager.add_text(tmp);
-    }
-
-    // add background
-    tmp = P{};
-    tmp.name = "background";
-    tmp.dim = sf::Vector2f(w, h);
-
-    manager.add_rectangle(tmp);
+    setup_graphics();
 }
 
 void Emulator::run()
@@ -83,6 +51,82 @@ void Emulator::inject_rom(const std::string &path, int start_index)
     for (size_t i = 0; i < bytes.size(); ++i) 
         ram.write(start_index + i, bytes[i]);
 }
+
+void Emulator::setup_graphics()
+{
+    using P = Object_manager::Object_property;
+
+    // add call stack
+    for (int i = 0; i < 8; ++i)
+    {
+        P tmp;
+        tmp.name = "S" + std::to_string(i);
+        tmp.pos = set_graphics_pos(20, i * 3, 0, 65);
+        manager.add_text(tmp);
+    }
+
+    for (int i = 7; i < 16; ++i)
+    {
+        P tmp;
+        tmp.name = "S" + std::to_string(i);
+        tmp.pos = set_graphics_pos(40, (i - 8) * 3, 0, 65);
+        manager.add_text(tmp);
+    }
+
+    // add program counter
+    P tmp;
+    tmp.name = "PC";
+    tmp.pos = set_graphics_pos(20, 60);
+    manager.add_text(tmp);
+
+    // add opcode
+    tmp = P{};
+    tmp.name = "Instruction";
+    tmp.pos = set_graphics_pos(40, 60);
+    manager.add_text(tmp);
+
+    // add registers
+    for (int i = 0; i < 16; ++i)
+    {
+        P tmp;
+        tmp.name = "V" + std::to_string(i);
+        tmp.pos = set_graphics_pos(70, 3 * i, 0, 10);
+        manager.add_text(tmp);
+    }
+
+    tmp = P{};
+    tmp.name = "I";
+    tmp.pos = set_graphics_pos(70, 48, 0, 15);
+    manager.add_text(tmp);
+
+    tmp = P{};
+    tmp.name = "ST";
+    tmp.pos = set_graphics_pos(70, 51, 0, 15);
+    manager.add_text(tmp);
+
+    tmp = P{};
+    tmp.name = "DT";
+    tmp.pos = set_graphics_pos(70, 54, 0, 15);
+    manager.add_text(tmp);
+
+    // add background
+    tmp = P{};
+    tmp.name = "background";
+    tmp.dim = sf::Vector2f(window.getSize().x, window.getSize().y);
+    tmp.color = sf::Color::Black;
+    manager.add_rectangle(tmp);
+}
+    
+sf::Vector2f Emulator::set_graphics_pos(int x_percent, int y_percent,
+int x_offset, int y_offset) const
+{
+    auto [x,y] = window.getSize();
+    sf::Vector2f tmp;
+    tmp.x = (x / 100 * x_percent) + (x / 100 * x_offset);
+    tmp.y = (y / 100 * y_percent) + (y / 100 * y_offset);
+
+    return tmp;
+}
    
 void Emulator::handle_events()
 {
@@ -112,7 +156,13 @@ void Emulator::render()
     window.draw(manager.get_rectangle_ref("background"));
     window.draw(manager.get_text_cref("PC"));
     window.draw(manager.get_text_cref("Instruction"));
+    window.draw(manager.get_text_cref("I"));
+    window.draw(manager.get_text_cref("DT"));
+    window.draw(manager.get_text_cref("ST"));
     
+    for (int i = 0; i < 16; ++i)
+        window.draw(manager.get_text_cref("S" + std::to_string(i)));
+
     for(int i = 0; i < 16; ++i)
         window.draw(manager.get_text_cref("V" + std::to_string(i)));
 
@@ -131,19 +181,50 @@ void Emulator::update_graphics()
     manager.modify_string("Instruction", ss.str());
     ss.str("");
 
-    for (int i = 0; i < 9; ++i)
+    auto s = cpu.get_stack();
+    for (int i = 0; i < 16; ++i)
+    {
+        if (i == cpu.get_stack_pointer())
+        {
+            ss << "-> Stack[" << i << "]: 0x" << std::hex 
+            << s[i];
+            manager.modify_string("S" + std::to_string(i), ss.str());
+            ss.str("");
+        }
+        else
+        { 
+            ss << "Stack[" << i << "]: 0x" << std::hex 
+            << s[i];
+            manager.modify_string("S" + std::to_string(i), ss.str());
+            ss.str("");
+        }
+    }
+
+    for (int i = 0; i < 16; ++i)
     {
         ss << "V" << i << ": 0x" << static_cast<int>(cpu.get_reg_at(i));
         manager.modify_string("V" + std::to_string(i), ss.str());
         ss.str("");
     }
 
-    for (int i = 9; i < 16; ++i)
-    {
-        ss << "V" << i << ": 0x" << static_cast<int>(cpu.get_reg_at(i));
-        manager.modify_string("V" + std::to_string(i), ss.str());
-        ss.str("");
-    }
+    //for (int i = 9; i < 16; ++i)
+    //{
+    //    ss << "V" << i << ": 0x" << static_cast<int>(cpu.get_reg_at(i));
+    //    manager.modify_string("V" + std::to_string(i), ss.str());
+    //    ss.str("");
+    //}
+
+    ss << "V_I:\t 0x" << std::hex << cpu.get_I();
+    manager.modify_string("I", ss.str());
+    ss.str("");
+
+    ss << "V_DT: 0x" << std::hex << static_cast<int>(cpu.get_DT());
+    manager.modify_string("DT", ss.str());
+    ss.str("");
+
+    ss << "V_ST: 0x" << std::hex << static_cast<int>(cpu.get_ST());
+    manager.modify_string("ST", ss.str());
+    ss.str("");
 
     //manager.get_text_ref("PC").setString("PC: " 
     //        + std::to_string(cpu.get_pc()));

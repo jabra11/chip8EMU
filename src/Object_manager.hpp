@@ -17,8 +17,8 @@ public:
         std::string name;
         sf::Vector2f dim;
         sf::Vector2f pos;
-        sf::Color color;
-        int font_size = 15;
+        sf::Color color = sf::Color::Green;
+        int font_size = 16;
     };
 
     Object_manager();

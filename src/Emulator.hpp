@@ -23,6 +23,12 @@ public:
 
 private:
 
+    void setup_graphics();
+
+    // parameters are in % relative to the window size
+    sf::Vector2f set_graphics_pos(int x_percent, int y_percent, 
+    int x_offset = 0, int y_offset = 0) const;
+
     void handle_events();
     void render();
     void update_graphics();
@@ -36,7 +42,7 @@ private:
     Object_manager manager;
 
     // in hz
-    int clock_speed = 100;
+    int clock_speed = 25;
 
     // keep track of bottlenecking
     int clock_cycles_done = 0;
