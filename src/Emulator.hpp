@@ -4,7 +4,7 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 
-#include <Timings.hpp>
+//#include <Timings.hpp>
 
 #include "cpu/CPU.hpp"
 #include "memory/Memory.hpp"
@@ -32,6 +32,10 @@ private:
     void handle_events();
     void render();
     void update_graphics();
+
+    // preprocess the chip8 display
+    // to make it fit the Emulator properly
+    sf::RectangleShape& preprocess_display(sf::RectangleShape& obj);
 
     void emulate_cpu();
     bool cpu_ready();

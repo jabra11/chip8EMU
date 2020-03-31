@@ -90,23 +90,23 @@ void Emulator::setup_graphics()
     {
         P tmp;
         tmp.name = "V" + std::to_string(i);
-        tmp.pos = set_graphics_pos(70, 3 * i, 0, 10);
+        tmp.pos = set_graphics_pos(80, 3 * i, 0, 10);
         manager.add_text(tmp);
     }
 
     tmp = P{};
     tmp.name = "I";
-    tmp.pos = set_graphics_pos(70, 48, 0, 15);
+    tmp.pos = set_graphics_pos(80, 48, 0, 15);
     manager.add_text(tmp);
 
     tmp = P{};
     tmp.name = "ST";
-    tmp.pos = set_graphics_pos(70, 51, 0, 15);
+    tmp.pos = set_graphics_pos(80, 51, 0, 15);
     manager.add_text(tmp);
 
     tmp = P{};
     tmp.name = "DT";
-    tmp.pos = set_graphics_pos(70, 54, 0, 15);
+    tmp.pos = set_graphics_pos(80, 54, 0, 15);
     manager.add_text(tmp);
 
     // add background
@@ -166,7 +166,19 @@ void Emulator::render()
     for(int i = 0; i < 16; ++i)
         window.draw(manager.get_text_cref("V" + std::to_string(i)));
 
+    const auto& display_graphics = display.get_graphics();
+    for (auto i : display_graphics)
+        window.draw(preprocess_display(i));
+
     window.display();
+}
+
+sf::RectangleShape& Emulator::preprocess_display(sf::RectangleShape& obj)
+{
+    constexpr float scale = 10.F;
+    obj.setScale(scale, scale);
+    obj.setPosition(set_graphics_pos(5, 10));
+    return obj;
 }
 
 void Emulator::update_graphics()
