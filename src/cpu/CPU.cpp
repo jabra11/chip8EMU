@@ -1,4 +1,5 @@
 #include <iostream>
+#include <exception>
 
 #include "CPU.hpp"
 #include "Instructions.hpp"
@@ -228,6 +229,7 @@ void CPU::clear_display()
     if constexpr(debug)
         current_opcode = __FUNCTION__;
         
+    std::cout << "clear\n";
     display->clear_display();
 }
 
@@ -436,8 +438,14 @@ void CPU::draw(uint8_t Vx, uint8_t Vy, uint8_t amount_sprites)
 {
     if constexpr(debug) 
         current_opcode = __FUNCTION__;
-    
-    // work in progress
+
+    std::cout << "draw\n";
+    //for (int i = 0; i < amount_sprites; ++i)
+    //{
+    //    // set VF to 1 if pixel collision happened
+    //    if (display->add_graphic(reg.get(Vx), reg.get(Vy), ram->read(reg.I + i)))
+    //        reg.put(0xF, 1);
+    //}
 }
 
 void CPU::skip_if_pressed(uint8_t Vx)
