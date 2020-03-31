@@ -8,6 +8,13 @@ Object_manager::Object_manager()
     default_font.loadFromFile("../resources/fonts/arial.ttf");
 }
 
+void Object_manager::erase_all()
+{
+    rectangles = {};
+    texts = {};
+}
+
+
 void Object_manager::add_text(const Object_manager::Object_property &properties)
 {
     sf::Text tmp{properties.name, default_font};

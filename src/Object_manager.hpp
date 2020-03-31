@@ -23,6 +23,10 @@ public:
 
     Object_manager();
 
+    // erase all objects currently
+    // managed by the Object_manager
+    void erase_all();
+
     void add_text(const Object_property& properties);
     void remove_text(const std::string& size);
 
