@@ -4,15 +4,7 @@
 
 int main()
 {
-    // http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
-    
-    //Memory mem;
-    //CPU cpu{&mem};
-    //uint16_t test = 0xF065;
-    //cpu.parse_instruction(test);
-
     Emulator emu;
-    emu.inject_rom("../roms/pong.rom");
-    emu.run();
-    return 0;
+    emu.inject_rom("../roms/pdemo.ch8");
+    return emu.run();
 }
