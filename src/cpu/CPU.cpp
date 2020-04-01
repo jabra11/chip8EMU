@@ -14,7 +14,7 @@ CPU::CPU(Memory* ram, Keyboard* kb, Display* dp)
 
 void CPU::execute_next_cycle()
 {
-    parse_instruction(0xFFFF);
+    parse_instruction();
     update_timers();
 }
 
@@ -62,12 +62,12 @@ void CPU::update_timers()
 {
     if (reg.DT)
     {
-        if (timer.is_ready(Timer::Type::delay, 60))
+        if (timer.is_ready(CPU_timer::Type::delay, 60))
             --reg.DT;
     }
     if (reg.ST)
     {
-        if (timer.is_ready(Timer::Type::sound, 60))
+        if (timer.is_ready(CPU_timer::Type::sound, 60))
             --reg.ST;
     }
 }
@@ -98,14 +98,11 @@ uint16_t CPU::fetch_opcode()
 }
 
 
-void CPU::parse_instruction(uint16_t test_opcode)
+void CPU::parse_instruction()
 { 
     // opcodes are based on 
     // http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#3.1
     uint16_t opcode = fetch_opcode();
-    
-    // testing
-    //opcode = 0xFF0A;
 
     if (OP::is_clear_display(opcode))               
         clear_display(); 
@@ -213,7 +210,6 @@ void CPU::parse_instruction(uint16_t test_opcode)
         jump_sys(opcode & 0x0FFF);
     else
         throw std::runtime_error{"Unsupported instruction."};
-    
 }
 
 void CPU::jump_sys(uint16_t address)
@@ -229,7 +225,7 @@ void CPU::clear_display()
     if constexpr(debug)
         current_opcode = __FUNCTION__;
         
-    std::cout << "clear\n";
+    throw 5;
     display->clear_display();
 }
 
@@ -439,13 +435,15 @@ void CPU::draw(uint8_t Vx, uint8_t Vy, uint8_t amount_sprites)
     if constexpr(debug) 
         current_opcode = __FUNCTION__;
 
-    std::cout << "draw\n";
-    //for (int i = 0; i < amount_sprites; ++i)
-    //{
-    //    // set VF to 1 if pixel collision happened
-    //    if (display->add_graphic(reg.get(Vx), reg.get(Vy), ram->read(reg.I + i)))
-    //        reg.put(0xF, 1);
-    //}
+    for (int i = 0; i < amount_sprites; ++i)
+    {
+        //std::cout << static_cast<int>(i) << std::endl;
+        // set VF to 1 if pixel collision happened
+        if (display->add_graphic(reg.get(Vx), reg.get(Vy) + i, ram->read(reg.I + i)))
+            reg.put(0xF, 1);
+        else
+            reg.put(0xF, 0);
+    }
 }
 
 void CPU::skip_if_pressed(uint8_t Vx)
@@ -523,7 +521,10 @@ void CPU::load_sprite_loc(uint8_t Vx)
     if constexpr(debug) 
         current_opcode = __FUNCTION__;
 
-    // work in progress 
+    // startaddress defined in 
+    // void Emulator::init_interpreter_space()
+    constexpr int start_address = 0x100;
+    reg.I = (reg.get(Vx) * 5) + start_address;
 }
 
 void CPU::load_BCD(uint8_t Vx)

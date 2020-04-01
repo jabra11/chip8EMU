@@ -5,7 +5,7 @@
 
 #include "Registers.hpp"
 #include "RNG.hpp"
-#include "Timer.hpp"
+#include "CPU_timer.hpp"
 
 class Memory;
 class Display;
@@ -27,14 +27,13 @@ public:
     uint8_t get_stack_pointer() const;
     const std::array<uint16_t, 16>& get_stack() const;
 
-    // in public for testing
-    void parse_instruction(uint16_t test_opcode);
-
 private:
     static constexpr bool debug = true;
 
     uint16_t fetch_opcode();
     void update_timers();
+
+    void parse_instruction();
 
     void jump_sys(uint16_t address);
     void clear_display();
@@ -72,8 +71,6 @@ private:
     void dump_reg(uint8_t Vx);
     void load_reg(uint8_t Vx);
     
-    // TODO: finish this up (32/35)
-
     // store the currently executing address
     uint16_t program_counter = 0x200;
 
@@ -89,7 +86,7 @@ private:
     // to after finishing a subroutine
     std::array<uint16_t, 16> stack{};
 
-    Timer timer;
+    CPU_timer timer;
     RNG rng;
     Registers reg;
 
