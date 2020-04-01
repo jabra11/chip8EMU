@@ -86,7 +86,7 @@ uint16_t CPU::fetch_opcode()
     // if a program includes sprite data, it should be padded
     // to ensure the opcodes to be aligned properly
     if (program_counter % 2 != 0)
-        throw std::exception{"program counter missaligned"};
+        throw std::runtime_error{"program counter missaligned"};
 
     uint16_t opcode = ram->read(program_counter++);
     opcode = opcode << 8;
