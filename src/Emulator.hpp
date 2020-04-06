@@ -18,6 +18,23 @@
 class Emulator
 {
 public:
+    struct CPU_state
+    {
+        int clockcycles_done = 0;
+        int clockspeed = 1000;
+        int actual_clockspeed = 1000;
+        double cycle_adjustment = 1;
+
+        // set this to true if the emulator can't 
+        // emulate faster
+        bool bottleneck = true;
+        bool halt = false;
+        bool step = false;
+
+        bool changing_clockspeed = false;
+        bool new_cycle = true;
+    };
+
     explicit Emulator(int w = 1024, int h = 768);
 
     int run();
@@ -40,9 +57,6 @@ private:
     void render();
     void update_graphics();
 
-    // make a sound
-    void buzz();
-
     // preprocess the chip8 display
     // to make it fit the Emulator's screen properly
     sf::RectangleShape& preprocess_display(sf::RectangleShape& obj);
@@ -50,29 +64,22 @@ private:
     void update_clockspeed(int percentage);
 
     void emulate_cpu();
-    bool cpu_ready(int interval);
+    bool cpu_ready(double hz);
+
     std::vector<uint8_t> get_bytes(const std::string& path);
-    
+
     sf::RenderWindow window;
     Object_manager manager;
     
     // in hz
     int framerate = 144;
-    // in hz
-    int clock_speed = 1000; 
-    double interval = clock_speed;
-    // keep track of bottlenecking
-    int clock_cycles_done = 0;
+
     std::array<std::string, 8> opcodes;
+    std::array<std::string, 8> opcode_args;
 
     bool mouse_pressed = false;
-    bool new_cycle = true;
 
-    // annoying that I have to declare
-    // the soundbuffer as a member aswell..
-    sf::SoundBuffer sb;
-    sf::Sound sound;
-
+    CPU_state cs;
     Timer timer;
     Memory ram;
     Display display;

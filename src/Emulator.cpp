@@ -4,9 +4,9 @@
 #include <chrono> // sleep_for helper
 #include <thread> // sleep_for
 #include <sstream>
+#include <numeric>
 
 #include <cstddef>
-//#include <Timings.hpp>
 
 
 #include <SFML/Graphics.hpp>
@@ -17,13 +17,10 @@
 #include "utility/Object_manager.hpp"
 
 Emulator::Emulator(int w, int h)
-    :window{sf::VideoMode(w, h), "Chip8"}
+    :window{sf::VideoMode(w, h), "Chip8EMU"}
 {
     setup_graphics();
     init_interpreter_space();
-    sb.loadFromFile("../resources/sounds/sound2.wav");
-    sound.setBuffer(sb);
-    sound.setVolume(0.f);
 }
 
 int Emulator::run()
@@ -197,14 +194,14 @@ void Emulator::setup_graphics()
     P tmp;
     tmp.name = "clockspeed_slider1";
     tmp.dim = get_graphics_pos(15, 1);
-    tmp.pos = get_graphics_pos(50, 5);
+    tmp.pos = get_graphics_pos(45, 5);
     manager.add_rectangle(tmp);
 
     // add clockspeed_slider_p2
     tmp = {};
     tmp.name = "clockspeed_slider2";
     tmp.dim = get_graphics_pos(2, 4);
-    tmp.pos = get_graphics_pos(50, 5);
+    tmp.pos = get_graphics_pos(45, 5);
     tmp.color = sf::Color::Red;
     manager.add_rectangle(tmp);
 
@@ -212,6 +209,30 @@ void Emulator::setup_graphics()
     tmp = {};
     tmp.name = "clockspeed";
     tmp.pos = get_graphics_pos(20, 3);
+    tmp.color = sf::Color::Green;
+    tmp.font_size = 20;
+    manager.add_text(tmp);
+
+    // add hold "button"
+    tmp = {};
+    tmp.name = "HALT";
+    tmp.pos = get_graphics_pos(60, 3);
+    tmp.color = sf::Color::Green;
+    tmp.font_size = 20;
+    manager.add_text(tmp);
+
+    // add step "button"
+    tmp = {};
+    tmp.name = "STEP";
+    tmp.pos = get_graphics_pos(68, 3);
+    tmp.color = sf::Color::Green;
+    tmp.font_size = 20;
+    manager.add_text(tmp);
+
+    // add reset "button"
+    tmp = {};
+    tmp.name = "RESET";
+    tmp.pos = get_graphics_pos(80, 3);
     tmp.color = sf::Color::Green;
     tmp.font_size = 20;
     manager.add_text(tmp);
@@ -228,11 +249,21 @@ void Emulator::setup_graphics()
     tmp.pos = get_graphics_pos(40, 60);
     manager.add_text(tmp);
 
+
     for (size_t i = 0; i < opcodes.size(); ++i)
     {
         tmp = P{};
         tmp.name = "OP" + std::to_string(i);
         tmp.pos = get_graphics_pos(40, i * 3, 0, 65);
+        manager.add_text(tmp);
+    }
+
+    // add args
+    for (size_t i = 0; i < opcodes.size(); ++i)
+    {
+        tmp = P{};
+        tmp.name = "Args" + std::to_string(i);
+        tmp.pos = get_graphics_pos(48, i * 3, 0, 65);
         manager.add_text(tmp);
     }
 
@@ -284,19 +315,37 @@ void Emulator::handle_userinput()
     if (mouse_pressed)
     {
         auto mouse_pos = sf::Mouse::getPosition(window);
+
         auto& slider_button = manager.get_rectangle_ref("clockspeed_slider2");
         const auto& button_b = slider_button.getGlobalBounds();
         const auto& slider_b = manager.get_rectangle_cref("clockspeed_slider1").getGlobalBounds();
-
         if (button_b.contains(mouse_pos.x, mouse_pos.y))
         {
             if (mouse_pos.x > slider_b.left && mouse_pos.x < slider_b.left + slider_b.width) 
             {
+                cs.changing_clockspeed = true;
                 slider_button.setPosition(mouse_pos.x, slider_button.getPosition().y);
                 float p = (slider_button.getPosition().x - slider_b.left) / slider_b.width;
                 update_clockspeed(p*100);
             }
         }
+        if (manager.get_text_cref("HALT").getGlobalBounds()
+                .contains(mouse_pos.x, mouse_pos.y)) 
+        {
+            if (cs.halt)
+            {
+                cs.halt = false;
+                cs.clockcycles_done = cs.clockspeed / 4;
+            }
+            else
+            {
+                cs.halt = true;
+            }
+        }
+    }
+    else
+    {
+        cs.changing_clockspeed = false;
     }
 }
    
@@ -350,7 +399,10 @@ void Emulator::render()
     window.draw(manager.get_rectangle_cref("clockspeed_slider1"));
     window.draw(manager.get_rectangle_cref("clockspeed_slider2"));
     window.draw(manager.get_text_cref("clockspeed"));
-    
+    window.draw(manager.get_text_cref("RESET"));
+    window.draw(manager.get_text_cref("HALT"));
+    window.draw(manager.get_text_cref("STEP"));
+
     for (int i = 0; i < 16; ++i)
         window.draw(manager.get_text_cref("S" + std::to_string(i)));
 
@@ -361,6 +413,9 @@ void Emulator::render()
     
     for (size_t i = 0; i < opcodes.size(); ++i)
         window.draw(manager.get_text_cref("OP" + std::to_string(i)));
+    
+    for (size_t i = 0; i < opcode_args.size(); ++i)
+        window.draw(manager.get_text_cref("Args" + std::to_string(i)));
 
     for (auto i : display_graphics)
         window.draw(preprocess_display(i));
@@ -376,14 +431,21 @@ void Emulator::update_graphics()
     manager.modify_string("PC", ss.str());
     ss.str("");
 
-    if (new_cycle)
+    if (cs.new_cycle)
     {
         opcodes[opcodes.size() - 1] = cpu.get_current_opcode();
         std::rotate(opcodes.begin(), opcodes.end() - 1, opcodes.end());
 
+        opcode_args[opcode_args.size() - 1] = cpu.get_current_args();
+        std::rotate(opcode_args.begin(), opcode_args.end() - 1, opcode_args.end());
+
         for (size_t i = 0; i < opcodes.size(); ++i)
             manager.modify_string("OP" + std::to_string(i), opcodes[i]);
-        new_cycle = false;
+        
+        for (size_t i = 0; i < opcode_args.size(); ++i)
+            manager.modify_string("Args" + std::to_string(i), opcode_args[i]);
+
+        cs.new_cycle = false;
     }
 
     auto s = cpu.get_stack();
@@ -424,14 +486,31 @@ void Emulator::update_graphics()
     manager.modify_string("ST", ss.str());
     ss.str("");
 
-    ss << "Clock: " << std::dec << clock_speed << "hz";
-    manager.modify_string("clockspeed", ss.str());
+    if (cs.changing_clockspeed)
+    {
+        if (cs.clockspeed >= 1'000'000)
+            ss << "Clock: " << std::dec << cs.clockspeed / 1'000'000.0 << "mhz";
+        else if (cs.clockspeed >= 1000)
+            ss << "Clock: " << std::dec << cs.clockspeed / 1000.0 << "khz";
+        else
+            ss << "Clock: " << std::dec << cs.clockspeed << "hz";
+        manager.modify_string("clockspeed", ss.str());
+    }
+    else
+    {
+        if (cs.actual_clockspeed >= 1'000'000)
+            ss << "Clock: " << std::dec << cs.actual_clockspeed / 1'000'000.0 << "mhz";
+        else if (cs.actual_clockspeed >= 1000)
+            ss << "Clock: " << std::dec << cs.actual_clockspeed / 1000.0 << "khz";
+        else
+            ss << "Clock: " << std::dec << cs.actual_clockspeed << "hz";
+        manager.modify_string("clockspeed", ss.str());
+        if (cs.bottleneck)
+            manager.get_text_ref("clockspeed").setFillColor(sf::Color::Red);
+        else
+            manager.get_text_ref("clockspeed").setFillColor(sf::Color::Green);
+    }
     ss.str("");
-}
-
-void Emulator::buzz()
-{
-    sound.play();
 }
 
 sf::RectangleShape& Emulator::preprocess_display(sf::RectangleShape& obj)
@@ -448,49 +527,73 @@ sf::RectangleShape& Emulator::preprocess_display(sf::RectangleShape& obj)
 
 void Emulator::update_clockspeed(int percentage)
 {
-    //std::cout << percentage << '\n';
-    if (percentage < 5) clock_speed = 1;
-    else if (percentage < 10) clock_speed = 5;
-    else if (percentage < 20) clock_speed = 25;
-    else if (percentage < 30) clock_speed = 100;
-    else if (percentage < 40) clock_speed = 500;
-    else if (percentage < 50) clock_speed = 1000;
-    else if (percentage < 60) clock_speed = 5000;
-    else if (percentage < 70) clock_speed = 10'000;
-    else if (percentage < 80) clock_speed = 50'000;
-    else if (percentage < 85) clock_speed = 100'000;
-    else if (percentage < 95) clock_speed = 1'000'000;
+    if (percentage < 5) cs.clockspeed = 1;
+    else if (percentage < 10) cs.clockspeed = 5;
+    else if (percentage < 15) cs.clockspeed = 10;
+    else if (percentage < 20) cs.clockspeed = 25;
+    else if (percentage < 25) cs.clockspeed = 50;
+    else if (percentage < 30) cs.clockspeed = 100;
+    else if (percentage < 35) cs.clockspeed = 250;
+    else if (percentage < 40) cs.clockspeed = 500;
+    else if (percentage < 45) cs.clockspeed = 750;
+    else if (percentage < 50) cs.clockspeed = 1000;
+    else if (percentage < 55) cs.clockspeed = 2500;
+    else if (percentage < 60) cs.clockspeed = 5000;
+    else if (percentage < 70) cs.clockspeed = 10'000;
+    else if (percentage < 75) cs.clockspeed = 25'000;
+    else if (percentage < 80) cs.clockspeed = 50'000;
+    else if (percentage < 85) cs.clockspeed = 100'000;
+    else if (percentage < 95) cs.clockspeed = 1'000'000;
 }
 
 void Emulator::emulate_cpu()
 {
+    // return immediately if the cpu 
+    // is currently halting
+    if (cs.halt)
+        return;
+
     // adjust the interval to make the
     // clock_speed actually be independent
     // of delay due to frame rendering
-
-    if (timer.is_ready(Timer::Type::seconds, 1))
+    if (timer.is_ready(Timer::Type::milliseconds, 250))
     {
-        if (clock_cycles_done)
+        if (cs.clockspeed >= 100 && cs.clockcycles_done)
         {
-            interval = static_cast<double>(clock_speed) / clock_cycles_done;
-            if (!interval)
-                interval = 1;
-            std::cout << "cycles: " << clock_cycles_done << '\n';
-            std::cout << interval << '\n';
-            clock_cycles_done = 0;
+            cs.cycle_adjustment *= (cs.clockspeed / 4.0) / cs.clockcycles_done;
+            if (cs.cycle_adjustment > 500)
+            { 
+                cs.cycle_adjustment = 500;
+                cs.bottleneck = true;
+            }
+            else
+                cs.bottleneck = false;
+
+            cs.actual_clockspeed = cs.clockcycles_done * 4;
+        }
+        cs.clockcycles_done = 0;
+    }
+    if (cs.clockspeed < 100)
+    {
+        if (cpu_ready(cs.clockspeed))
+        {
+            cpu.execute_next_cycle();
+            ++cs.clockcycles_done;
+            cs.new_cycle = true;
+            cs.actual_clockspeed = cs.clockspeed;
         }
     }
-    if (cpu_ready(clock_speed))
+    else if (cpu_ready(cs.cycle_adjustment*cs.clockspeed))
     {
         cpu.execute_next_cycle();
-        ++clock_cycles_done;
-        new_cycle = true;
+        ++cs.clockcycles_done;
+        cs.new_cycle = true;
     }
 }
 
-bool Emulator::cpu_ready(int interval)
+bool Emulator::cpu_ready(double hz)
 {
-    if (timer.is_ready(Timer::Type::cpu, interval))
+    if (timer.is_ready(Timer::Type::cpu, hz))
         return true;
     return false;
 }
