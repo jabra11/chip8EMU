@@ -1,5 +1,6 @@
 #include <iostream>
 #include <exception>
+#include <iomanip>
 
 #include "CPU.hpp"
 #include "Instructions.hpp"
@@ -43,9 +44,14 @@ uint8_t CPU::get_reg_at(uint8_t index) const
     return reg.get(index);
 }
 
-std::string CPU::get_current_opcode() const
+std::string CPU::get_current_opcode()
 {
-    return current_opcode;
+    return opcode.str();
+}
+    
+std::string CPU::get_current_args()
+{
+    return args.str();
 }
 
 uint8_t CPU::get_stack_pointer() const
@@ -100,6 +106,10 @@ uint16_t CPU::fetch_opcode()
 
 void CPU::parse_instruction()
 { 
+    // clear streams
+    opcode.str("");
+    args.str("");
+
     // opcodes are based on 
     // http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#3.1
     uint16_t opcode = fetch_opcode();
@@ -215,7 +225,9 @@ void CPU::parse_instruction()
 void CPU::jump_sys(uint16_t address)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "SYS";
+    }
         
     program_counter = address;
 }
@@ -223,16 +235,15 @@ void CPU::jump_sys(uint16_t address)
 void CPU::clear_display()
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
+        opcode << "CLS";
         
-    throw 5;
     display->clear_display();
 }
 
 void CPU::return_from_routine()
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
+        opcode << "RET";
 
     program_counter = stack[stack_pointer];
     stack[stack_pointer--] = 0;
@@ -241,7 +252,10 @@ void CPU::return_from_routine()
 void CPU::jump(uint16_t address)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "JP";
+        args << "0x" << std::hex << address;
+    }
 
     program_counter = address;
 }
@@ -249,7 +263,10 @@ void CPU::jump(uint16_t address)
 void CPU::call_subroutine(uint16_t address)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "CALL";
+        args << "0x" << std::hex << address;
+    }
 
     stack[++stack_pointer] = program_counter;
     program_counter = address;
@@ -258,7 +275,11 @@ void CPU::call_subroutine(uint16_t address)
 void CPU::skip_if_rb(uint8_t Vx, uint8_t byte)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "SE";
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", 0x" << static_cast<int>(byte);
+    }
         
     if (reg.get(Vx) == byte)
         program_counter += 2;
@@ -267,7 +288,11 @@ void CPU::skip_if_rb(uint8_t Vx, uint8_t byte)
 void CPU::skip_if_not_rb(uint8_t Vx, uint8_t byte)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "SNE";
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", 0x" << static_cast<int>(byte);
+    }
         
     if (reg.get(Vx) != byte)
         program_counter += 2;
@@ -276,8 +301,11 @@ void CPU::skip_if_not_rb(uint8_t Vx, uint8_t byte)
 void CPU::skip_if_rr(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "SE";
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
+    }    
     if (reg.get(Vx) == reg.get(Vy))
         program_counter += 2;
 }
@@ -285,56 +313,77 @@ void CPU::skip_if_rr(uint8_t Vx, uint8_t Vy)
 void CPU::load_rb(uint8_t Vx, uint8_t byte)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "LD";
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", 0x" << static_cast<int>(byte);
+    }
     reg.put(Vx, byte);
 }
 
 void CPU::load_rr(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "LD"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
+    }
     reg.put(Vx, reg.get(Vy));
 }
 
 void CPU::add(uint8_t Vx, uint8_t byte)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "ADD"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", 0x" << static_cast<int>(byte);
+    }    
     reg.put(Vx, reg.get(Vx) + byte);
 }
 
 void CPU::OR(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "OR"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
+    }   
     reg.put(Vx, (reg.get(Vx) | reg.get(Vy)));
 }
 
 void CPU::AND(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "AND"; 
+        args << "V" << std::hex
+                << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
+    }   
     reg.put(Vx, (reg.get(Vx) & reg.get(Vy)));
 }
     
 void CPU::XOR(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "XOR"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
+    }   
     reg.put(Vx, (reg.get(Vx) ^ reg.get(Vy)));
 }
 
 void CPU::add_c(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "ADD"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
+    }   
     // set V[0x0F] = 1 if result is > 8bits 
     if (reg.get(Vx) + reg.get(Vy) > 0xFF)
         reg.put(0x0F, 1);
@@ -344,8 +393,11 @@ void CPU::add_c(uint8_t Vx, uint8_t Vy)
 void CPU::sub(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "SUB"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
+    }
     // set V[0x0F] = 1 if Vx > Vy, otherwise 0
     if (reg.get(Vx) > reg.get(Vy))
         reg.put(0x0F, 1);
@@ -358,8 +410,10 @@ void CPU::sub(uint8_t Vx, uint8_t Vy)
 void CPU::shr(uint8_t Vx)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "SHR"; 
+        args << "V" << std::hex << static_cast<int>(Vx);
+    }   
     // if the least-signif. bit of Vx is 1, set 
     // VF to 1, otherwise to 0
     if ((reg.get(Vx) & 0x01) == 0x01)
@@ -373,8 +427,11 @@ void CPU::shr(uint8_t Vx)
 void CPU::sub_n(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "SUBN"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
+    }   
     // set V[0x0F] = 1 if Vy > Vx, otherwise 0
     if (reg.get(Vx) > reg.get(Vy))
         reg.put(0x0F, 1);
@@ -387,8 +444,10 @@ void CPU::sub_n(uint8_t Vx, uint8_t Vy)
 void CPU::shl(uint8_t Vx)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "SHL"; 
+        args << "V" << std::hex << static_cast<int>(Vx);
+    }   
     if (reg.get(Vx) >> 3 == 0x01)
         reg.put(0x0F, 1);
     else
@@ -400,8 +459,11 @@ void CPU::shl(uint8_t Vx)
 void CPU::skip_if_not_rr(uint8_t Vx, uint8_t Vy)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "SNE"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
+    }   
     if (reg.get(Vx) != reg.get(Vy))
         program_counter += 2;
 }
@@ -409,35 +471,46 @@ void CPU::skip_if_not_rr(uint8_t Vx, uint8_t Vy)
 void CPU::load_ai(uint16_t address)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-        
+    {
+        opcode << "LD"; 
+        args << "I, " << std::hex 
+                << address;
+    }   
     reg.I = address;
 }
 
 void CPU::jump_ra(uint16_t address)
 {
     if constexpr(debug)
-        current_opcode = __FUNCTION__;
-
+    {
+        opcode << "JP"; 
+        args << "V0 " << std::hex 
+                << address;
+    }
     program_counter = address + reg.get(0x0);
 }
 
 void CPU::rnd(uint8_t Vx, uint8_t byte)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
-    
+    {
+        opcode << "RND"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", 0x" << static_cast<int>(byte);
+    } 
     reg.put(Vx, rng.get(0,255) & byte);
 }
 
 void CPU::draw(uint8_t Vx, uint8_t Vy, uint8_t amount_sprites)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
-
+    {
+        opcode << "DRW"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy) << ", " << static_cast<int>(amount_sprites);
+    }
     for (int i = 0; i < amount_sprites; ++i)
     {
-        //std::cout << static_cast<int>(i) << std::endl;
         // set VF to 1 if pixel collision happened
         if (display->add_graphic(reg.get(Vx), reg.get(Vy) + i, ram->read(reg.I + i)))
             reg.put(0xF, 1);
@@ -449,8 +522,11 @@ void CPU::draw(uint8_t Vx, uint8_t Vy, uint8_t amount_sprites)
 void CPU::skip_if_pressed(uint8_t Vx)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
-
+    {
+        opcode << "SKP"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx);
+    }   
     if (keyboard->check(reg.get(Vx)))
         program_counter += 2;
 }
@@ -458,8 +534,11 @@ void CPU::skip_if_pressed(uint8_t Vx)
 void CPU::skip_if_not_pressed(uint8_t Vx)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
-
+    {
+        opcode << "SKNP"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx);
+    }
     if (!keyboard->check(reg.get(Vx)))
         program_counter += 2;
 }
@@ -467,7 +546,11 @@ void CPU::skip_if_not_pressed(uint8_t Vx)
 void CPU::load_delay(uint8_t Vx)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "LD"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", DT";
+    }
 
     reg.put(Vx, reg.DT);
 }
@@ -475,7 +558,11 @@ void CPU::load_delay(uint8_t Vx)
 void CPU::load_key(uint8_t Vx)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "LD"; 
+        args << "V" << std::hex 
+                << static_cast<int>(Vx) << ", K";
+    }
 
     for (int i = 0; i < 16; ++i)
     {
@@ -495,7 +582,11 @@ void CPU::load_key(uint8_t Vx)
 void CPU::set_delay(uint8_t Vx)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "LD"; 
+        args << "DT ," << std::hex 
+                << "V" << static_cast<int>(Vx);
+    }
 
     reg.DT = reg.get(Vx);
 }
@@ -503,7 +594,11 @@ void CPU::set_delay(uint8_t Vx)
 void CPU::set_sound(uint8_t Vx)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "LD"; 
+        args << "ST ," << std::hex 
+                << "V" << static_cast<int>(Vx);
+    }
 
     reg.ST = reg.get(Vx);
 }
@@ -511,7 +606,11 @@ void CPU::set_sound(uint8_t Vx)
 void CPU::add_ir(uint8_t Vx)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "ADD"; 
+        args << "I ," << "V"
+                << std::hex << static_cast<int>(Vx);
+    }
 
     reg.I += reg.get(Vx);
 }
@@ -519,7 +618,11 @@ void CPU::add_ir(uint8_t Vx)
 void CPU::load_sprite_loc(uint8_t Vx)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "LD"; 
+        args << "F " << std::hex 
+                << "V" << static_cast<int>(Vx);
+    }
 
     // startaddress defined in 
     // void Emulator::init_interpreter_space()
@@ -530,8 +633,11 @@ void CPU::load_sprite_loc(uint8_t Vx)
 void CPU::load_BCD(uint8_t Vx)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
-    
+    {
+        opcode << "LD"; 
+        args << "B " << std::hex 
+                << ",V" << static_cast<int>(Vx);
+    }
     auto tmp = reg.get(Vx);
     ram->write(reg.I, tmp / 100);
     ram->write(reg.I + 0x01, (tmp / 10) % 10);
@@ -541,7 +647,11 @@ void CPU::load_BCD(uint8_t Vx)
 void CPU::dump_reg(uint8_t Vx)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "LD"; 
+        args << "I, " << std::hex 
+                << "V" << static_cast<int>(Vx);
+    }
     
     // not sure if it is supposed to copy from
     // V0 to Vx or from V0 to reg.read(Vx)
@@ -553,7 +663,10 @@ void CPU::dump_reg(uint8_t Vx)
 void CPU::load_reg(uint8_t Vx)
 {
     if constexpr(debug) 
-        current_opcode = __FUNCTION__;
+    {
+        opcode << "LD"; args << std::hex 
+                << "V" << static_cast<int>(Vx) << ", I";
+    }
     
     // not sure if it is supposed to copy from
     // V0 to Vx or from V0 to reg.read(Vx)

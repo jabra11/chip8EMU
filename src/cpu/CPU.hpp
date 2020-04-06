@@ -2,6 +2,7 @@
 #define CPU_HPP
 
 #include <array>
+#include <sstream>
 
 #include "Registers.hpp"
 #include "RNG.hpp"
@@ -23,7 +24,8 @@ public:
     uint8_t get_DT() const;
     uint16_t get_pc() const;
     uint8_t get_reg_at(uint8_t index) const;
-    std::string get_current_opcode() const;
+    std::string get_current_opcode();
+    std::string get_current_args();
     uint8_t get_stack_pointer() const;
     const std::array<uint16_t, 16>& get_stack() const;
 
@@ -74,7 +76,8 @@ private:
     // store the currently executing address
     uint16_t program_counter = 0x200;
 
-    std::string current_opcode;
+    std::stringstream opcode;
+    std::stringstream args;
 
     // point to the topmost level of the stack
     // startvalue of 255 to avoid call_subroutine
