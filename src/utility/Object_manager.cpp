@@ -56,7 +56,7 @@ sf::Text& Object_manager::get_text_ref(const std::string &name)
 const sf::Text& Object_manager::get_text_cref(const std::string &name)
 {
     if (texts.find(name) == texts.end())
-        throw std::runtime_error{"Did not find rectangle."};
+        throw std::runtime_error{"Did not find text."};
     return texts[name];
 }
 
