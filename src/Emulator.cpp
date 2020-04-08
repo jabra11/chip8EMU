@@ -319,6 +319,7 @@ void Emulator::handle_userinput()
         auto& slider_button = manager.get_rectangle_ref("clockspeed_slider2");
         const auto& button_b = slider_button.getGlobalBounds();
         const auto& slider_b = manager.get_rectangle_cref("clockspeed_slider1").getGlobalBounds();
+        // Slider is used
         if (button_b.contains(mouse_pos.x, mouse_pos.y))
         {
             if (mouse_pos.x > slider_b.left && mouse_pos.x < slider_b.left + slider_b.width) 
@@ -329,9 +330,11 @@ void Emulator::handle_userinput()
                 update_clockspeed(p*100);
             }
         }
-        if (manager.get_text_cref("HALT").getGlobalBounds()
+        // Halt button is pressed
+        else if (manager.get_text_cref("HALT").getGlobalBounds()
                 .contains(mouse_pos.x, mouse_pos.y)) 
         {
+            std::cout << "t\n";
             if (cs.halt)
             {
                 cs.halt = false;
@@ -341,12 +344,27 @@ void Emulator::handle_userinput()
             {
                 cs.halt = true;
             }
+            mouse_pressed=false;
+        }
+        // Reset button is pressed
+        else if (manager.get_text_cref("RESET").getGlobalBounds()
+                .contains(mouse_pos.x, mouse_pos.y))
+        {
+            display = {};
+            cpu = CPU(&ram, &keyboard, &display);
+            mouse_pressed=false;
+        }
+        // Step button is pressed
+        // enable stepping only when the emulation is halting
+        else if (cs.halt && manager.get_text_cref("STEP").getGlobalBounds()
+                .contains(mouse_pos.x, mouse_pos.y))
+        {
+            cs.step = true;
+            mouse_pressed = false;
         }
     }
     else
-    {
         cs.changing_clockspeed = false;
-    }
 }
    
 void Emulator::handle_events()
@@ -505,12 +523,28 @@ void Emulator::update_graphics()
         else
             ss << "Clock: " << std::dec << cs.actual_clockspeed << "hz";
         manager.modify_string("clockspeed", ss.str());
+
+        // change the colour to red if bottleneck is
+        // detected
         if (cs.bottleneck)
             manager.get_text_ref("clockspeed").setFillColor(sf::Color::Red);
         else
             manager.get_text_ref("clockspeed").setFillColor(sf::Color::Green);
     }
     ss.str("");
+
+    // change colours of the halt and step button
+    // depending on the user input
+    if (cs.halt)
+    {
+        manager.get_text_ref("HALT").setFillColor(sf::Color::Red);
+        manager.get_text_ref("STEP").setFillColor(sf::Color::Green);
+    }
+    else
+    {
+        manager.get_text_ref("HALT").setFillColor(sf::Color::Green);
+        manager.get_text_ref("STEP").setFillColor(sf::Color::Red);
+    }
 }
 
 sf::RectangleShape& Emulator::preprocess_display(sf::RectangleShape& obj)
@@ -551,7 +585,18 @@ void Emulator::emulate_cpu()
     // return immediately if the cpu 
     // is currently halting
     if (cs.halt)
-        return;
+    {
+        // normalize cpu_state values do 
+        // prevent clockspeed fluctuation
+        // upon leaving the halt state
+        cs.clockcycles_done = cs.clockspeed / 4;
+        cs.actual_clockspeed = cs.clockspeed;
+
+        if (!cs.step)
+            return;
+        
+        cs.step=false;
+    }
 
     // adjust the interval to make the
     // clock_speed actually be independent
