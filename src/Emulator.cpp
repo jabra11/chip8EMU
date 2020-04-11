@@ -21,6 +21,9 @@ Emulator::Emulator(int w, int h)
 {
     setup_graphics();
     init_interpreter_space();
+
+    if (auto g = game_selector.get(); !g.empty())
+        inject_rom(g);
 }
 
 int Emulator::run()
@@ -42,8 +45,9 @@ int Emulator::run()
 
 void Emulator::inject_rom(const std::string &path, int start_index)
 {
-    auto bytes = get_bytes(path);
+    reset_states();
 
+    auto bytes = get_bytes(path);
     for (size_t i = 0; i < bytes.size(); ++i) 
         ram.write(start_index + i, bytes[i]);
 }
@@ -229,6 +233,14 @@ void Emulator::setup_graphics()
     tmp.font_size = 20;
     manager.add_text(tmp);
 
+    // add ROM button
+    tmp = {};
+    tmp.name = "SELECT ROM";
+    tmp.pos = get_graphics_pos(0,0);
+    tmp.font_size = 25;
+    tmp.color = sf::Color::Magenta;
+    manager.add_text(tmp);
+
     // add reset "button"
     tmp = {};
     tmp.name = "RESET";
@@ -310,6 +322,13 @@ int x_offset, int y_offset) const
     return tmp;
 }
 
+void Emulator::reset_states()
+{
+    display = {};
+    cpu = CPU(&ram, &keyboard, &display);
+    mouse_pressed=false;
+}
+
 void Emulator::handle_userinput()
 {
     if (mouse_pressed)
@@ -334,7 +353,6 @@ void Emulator::handle_userinput()
         else if (manager.get_text_cref("HALT").getGlobalBounds()
                 .contains(mouse_pos.x, mouse_pos.y)) 
         {
-            std::cout << "t\n";
             if (cs.halt)
             {
                 cs.halt = false;
@@ -350,9 +368,7 @@ void Emulator::handle_userinput()
         else if (manager.get_text_cref("RESET").getGlobalBounds()
                 .contains(mouse_pos.x, mouse_pos.y))
         {
-            display = {};
-            cpu = CPU(&ram, &keyboard, &display);
-            mouse_pressed=false;
+            reset_states();
         }
         // Step button is pressed
         // enable stepping only when the emulation is halting
@@ -360,6 +376,14 @@ void Emulator::handle_userinput()
                 .contains(mouse_pos.x, mouse_pos.y))
         {
             cs.step = true;
+            mouse_pressed = false;
+        }
+        // SELECT ROM button is pressed
+        else if(manager.get_text_cref("SELECT ROM").getGlobalBounds()
+                .contains(mouse_pos.x, mouse_pos.y))
+        {
+            if (auto g = game_selector.get(); !g.empty())
+                inject_rom(g);
             mouse_pressed = false;
         }
     }
@@ -420,6 +444,7 @@ void Emulator::render()
     window.draw(manager.get_text_cref("RESET"));
     window.draw(manager.get_text_cref("HALT"));
     window.draw(manager.get_text_cref("STEP"));
+    window.draw(manager.get_text_cref("SELECT ROM"));
 
     for (int i = 0; i < 16; ++i)
         window.draw(manager.get_text_cref("S" + std::to_string(i)));

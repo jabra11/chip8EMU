@@ -5,6 +5,5 @@
 int main()
 {
     Emulator emu;
-    emu.inject_rom("../roms/WIPEOFF.ch8");
     return emu.run();
 }
