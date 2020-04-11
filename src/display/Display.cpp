@@ -40,9 +40,9 @@ bool Display::add_graphic(uint8_t x, uint8_t y, uint8_t byte)
         {
             uint8_t draw_index_x = x + i;
             uint8_t draw_index_y = y;
+
             // if trying to draw outside of the frame
             // wrap to the opposing side
-                
             draw_index_x %= 64;
             draw_index_y %= 32;
 
