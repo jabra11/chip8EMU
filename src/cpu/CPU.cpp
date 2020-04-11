@@ -98,8 +98,6 @@ uint16_t CPU::fetch_opcode()
     opcode = opcode << 8;
     opcode += ram->read(program_counter++);
 
-    // testing
-    //std::cout << std::hex << opcode << std::endl;
     return opcode;
 }
 
@@ -225,9 +223,7 @@ void CPU::parse_instruction()
 void CPU::jump_sys(uint16_t address)
 {
     if constexpr(debug)
-    {
         opcode << "SYS";
-    }
         
     program_counter = address;
 }
@@ -384,6 +380,7 @@ void CPU::add_c(uint8_t Vx, uint8_t Vy)
         args << "V" << std::hex 
                 << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
     }   
+
     // set V[0x0F] = 1 if result is > 8bits 
     if (reg.get(Vx) + reg.get(Vy) > 0xFF)
         reg.put(0x0F, 1);
@@ -398,6 +395,7 @@ void CPU::sub(uint8_t Vx, uint8_t Vy)
         args << "V" << std::hex 
                 << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
     }
+
     // set V[0x0F] = 1 if Vx > Vy, otherwise 0
     if (reg.get(Vx) > reg.get(Vy))
         reg.put(0x0F, 1);
@@ -414,6 +412,7 @@ void CPU::shr(uint8_t Vx)
         opcode << "SHR"; 
         args << "V" << std::hex << static_cast<int>(Vx);
     }   
+
     // if the least-signif. bit of Vx is 1, set 
     // VF to 1, otherwise to 0
     if ((reg.get(Vx) & 0x01) == 0x01)
@@ -432,6 +431,7 @@ void CPU::sub_n(uint8_t Vx, uint8_t Vy)
         args << "V" << std::hex 
                 << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy);
     }   
+
     // set V[0x0F] = 1 if Vy > Vx, otherwise 0
     if (reg.get(Vx) > reg.get(Vy))
         reg.put(0x0F, 1);
@@ -509,14 +509,18 @@ void CPU::draw(uint8_t Vx, uint8_t Vy, uint8_t amount_sprites)
         args << "V" << std::hex 
                 << static_cast<int>(Vx) << ", V" << static_cast<int>(Vy) << ", " << static_cast<int>(amount_sprites);
     }
+
+    bool collision = false;
     for (int i = 0; i < amount_sprites; ++i)
     {
         // set VF to 1 if pixel collision happened
         if (display->add_graphic(reg.get(Vx), reg.get(Vy) + i, ram->read(reg.I + i)))
-            reg.put(0xF, 1);
-        else
-            reg.put(0xF, 0);
+            collision = true;
     }
+    if (collision)
+        reg.put(0xF, 1);
+    else
+        reg.put(0xF, 0);
 }
 
 void CPU::skip_if_pressed(uint8_t Vx)
@@ -621,7 +625,7 @@ void CPU::load_sprite_loc(uint8_t Vx)
     {
         opcode << "LD"; 
         args << "F " << std::hex 
-                << "V" << static_cast<int>(Vx);
+                << ",V" << static_cast<int>(Vx);
     }
 
     // startaddress defined in 
