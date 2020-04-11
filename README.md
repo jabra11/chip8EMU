@@ -4,9 +4,20 @@
 The goal of this project is to implement a Chip-8 interpreter. This is a starter project for me to get into low-level programming and emulations. It's using C++17 features so you will need a more or less up-to-date compiler to build it. Build instructions are below. 
 First some clips of it being in use in it's current state.
 
-![chip8EMU1](https://user-images.githubusercontent.com/34109209/78613490-4fde6f00-786c-11ea-9dae-7b8a814b7a31.gif)
+### The game selector (BETA)
+![chip8EMU1](https://user-images.githubusercontent.com/34109209/79055103-86d8ca00-7c4a-11ea-9bc2-6717a2c61569.gif)
 
-![chip8EMU2](https://user-images.githubusercontent.com/34109209/78613506-57057d00-786c-11ea-9fba-0ff17b5cf278.gif)
+### Playing WIPEOFF
+![chip8EMU2](https://user-images.githubusercontent.com/34109209/79055105-88a28d80-7c4a-11ea-9040-13f0af89f284.gif)
+
+### Changing the clockspeed while playing
+![chip8EMU3](https://user-images.githubusercontent.com/34109209/79055106-893b2400-7c4a-11ea-83af-9a4dcdf40f95.gif)
+
+### Stepping through the clockcycles
+![chip8EMU4](https://user-images.githubusercontent.com/34109209/79055107-8a6c5100-7c4a-11ea-8b15-e68b2812e26d.gif)
+
+### Red clockspeed means the emulator can't go faster
+![chip8EMU5](https://user-images.githubusercontent.com/34109209/79055109-8b9d7e00-7c4a-11ea-8076-5a5dfb93a926.gif)
 
 # Dependencies
 - Compiler with C++17 support
