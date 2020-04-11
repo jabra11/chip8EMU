@@ -8,6 +8,8 @@ set(src
     src/main.cpp
     src/Emulator.cpp
     src/Emulator.hpp
+    src/Game_selector.cpp
+    src/Game_selector.hpp
     src/cpu/CPU.cpp
     src/cpu/CPU.hpp
     src/cpu/Registers.cpp
