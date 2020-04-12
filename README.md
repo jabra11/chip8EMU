@@ -5,7 +5,8 @@ The goal of this project is to implement a Chip-8 interpreter. This is a starter
 First some clips of it being in use in it's current state.
 
 ### The game selector (BETA)
-![chip8EMU1](https://user-images.githubusercontent.com/34109209/79055103-86d8ca00-7c4a-11ea-9bc2-6717a2c61569.gif)
+![chip8EMU1](https://user-images.githubusercontent.com/34109209/79068709-36548180-7cc9-11ea-8205-3c5eea9a732a.gif)
+
 
 ### Playing WIPEOFF
 ![chip8EMU2](https://user-images.githubusercontent.com/34109209/79055105-88a28d80-7c4a-11ea-9040-13f0af89f284.gif)
