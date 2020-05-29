@@ -2,6 +2,7 @@
 #define REGISTERS_HPP
 
 #include <array>
+#include <cstdint>
 
 class Registers
 {

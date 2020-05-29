@@ -2,6 +2,7 @@
 #define MEMORY_HPP
 
 #include <array>
+#include <cstdint>
 
 class Memory
 {

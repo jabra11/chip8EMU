@@ -1,5 +1,8 @@
 #include "Memory.hpp"
 
+#include <cstdint>
+#include <stdexcept>
+
 uint8_t Memory::read(uint16_t address) const
 {
     if (address < 0xFFF)
