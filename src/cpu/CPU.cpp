@@ -420,7 +420,7 @@ void CPU::shr(uint8_t Vx)
     else
         reg.put(0x0F, 0);
 
-    reg.put(Vx, reg.get(Vx) >> 2);
+    reg.put(Vx, reg.get(Vx) >> 1);
 }
 
 void CPU::sub_n(uint8_t Vx, uint8_t Vy)
@@ -453,7 +453,7 @@ void CPU::shl(uint8_t Vx)
     else
         reg.put(0x0F, 0);
      
-    reg.put(Vx, reg.get(Vx) << 2);
+    reg.put(Vx, reg.get(Vx) << 1);
 }
 
 void CPU::skip_if_not_rr(uint8_t Vx, uint8_t Vy)
