@@ -46,3 +46,6 @@ $ cmake --build .
 // copy SFML dll's into the build directory
 $ ./Chip8EMU
 ```
+
+# Running
+The emulator expects to find the `roms` and `resources` folders in it's parent directory. So make sure to run it from the correct working directory.
