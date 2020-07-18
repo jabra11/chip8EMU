@@ -29,21 +29,14 @@ set(src
 
 find_package(SFML COMPONENTS graphics audio window system)
 
-#if (CMAKE_BUILD_TYPE STREQUAL "Release")
-#    set(Timings_DIR ~/projects/stalled/Timings/build/release)
-#elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-#    set(Timings_DIR ~/projects/stalled/Timings/build/debug)
-#endif()
-#find_package(Timings REQUIRED)
-
 add_executable(chip8EMU ${src})
 target_compile_options(chip8EMU PRIVATE -Wall -Wextra)
 target_link_libraries(chip8EMU
             PRIVATE
-            #Timings
             sfml-graphics
             sfml-audio
             sfml-window
-            sfml-system)       
+            sfml-system
+            )       
             
             

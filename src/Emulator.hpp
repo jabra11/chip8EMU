@@ -6,8 +6,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 
-//#include <Timings.hpp>
-
 #include "Game_selector.hpp"
 #include "cpu/CPU.hpp"
 #include "memory/Memory.hpp"

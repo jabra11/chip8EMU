@@ -4,7 +4,7 @@
 The goal of this project is to implement a Chip-8 interpreter. This is a starter project for me to get into low-level programming and emulations. It's using C++17 features so you will need a more or less up-to-date compiler to build it. Build instructions are below. 
 First some clips of it being in use in it's current state.
 
-### The game selector (BETA)
+### The game selector
 ![chip8EMU1](https://user-images.githubusercontent.com/34109209/79068709-36548180-7cc9-11ea-8205-3c5eea9a732a.gif)
 
 
