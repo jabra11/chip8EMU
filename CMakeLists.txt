@@ -30,7 +30,6 @@ set(src
 find_package(SFML COMPONENTS graphics audio window system)
 
 add_executable(chip8EMU ${src})
-target_compile_options(chip8EMU PRIVATE -Wall -Wextra)
 target_link_libraries(chip8EMU
             PRIVATE
             sfml-graphics
