@@ -17,6 +17,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name : Update system
+      run: sudo apt update && sudo apt upgrade
+
     - name : Install dependencies
       run: sudo apt install libsfml-dev
 
