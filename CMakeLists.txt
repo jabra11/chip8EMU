@@ -27,7 +27,7 @@ set(src
     src/utility/Timer.hpp
     )
 
-find_package(SFML COMPONENTS graphics audio window system)
+find_package(SFML COMPONENTS graphics audio window system REQUIRED)
 
 add_executable(chip8EMU ${src})
 target_link_libraries(chip8EMU
