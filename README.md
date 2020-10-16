@@ -1,3 +1,4 @@
+![CMake](https://github.com/jabra98/chip8EMU/workflows/CMake/badge.svg)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/jabra98/chip8EMU.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jabra98/chip8EMU/context:cpp)
 
 # chip8EMU
