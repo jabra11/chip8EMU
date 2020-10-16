@@ -8,9 +8,7 @@
 
 #include <cstddef>
 
-
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
 
 #include "Emulator.hpp"
 #include "utility/Timer.hpp"
