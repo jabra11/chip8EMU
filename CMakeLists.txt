@@ -38,4 +38,8 @@ target_link_libraries(chip8EMU
             sfml-system
             )       
             
-            
+install(TARGETS chip8EMU
+    RUNTIME DESTINATION bin)
+
+install(DIRECTORY roms resources
+    DESTINATION .)
